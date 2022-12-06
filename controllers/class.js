@@ -20,7 +20,7 @@ const startClass = async (req, res) => {
   }
 };
 
-const dissmissClass = async (req, res) => {
+const dismissClass = async (req, res) => {
   try {
     const { classId } = req.body;
     const oldClass = await Class.findByIdAndUpdate(classId, { active: false });
@@ -28,7 +28,7 @@ const dissmissClass = async (req, res) => {
       return res.status(404).json({ error: true, message: "Class not found" });
     res.status(200).json({
       error: false,
-      message: "Class dissmissed successfully",
+      message: "Class dismissed successfully",
     });
   } catch (err) {
     console.log(err);
@@ -84,4 +84,4 @@ const getClassesByCourseId = async (req, res) => {
   }
 };
 
-export { startClass, dissmissClass, markAttendance, getClassesByCourseId };
+export { startClass, dismissClass, markAttendance, getClassesByCourseId };

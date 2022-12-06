@@ -2,7 +2,7 @@ import { Router } from "express";
 
 import {
   startClass,
-  dissmissClass,
+  dismissClass,
   markAttendance,
   getClassesByCourseId,
 } from "../controllers/class.js";
@@ -10,7 +10,7 @@ import {
 const router = Router();
 
 router.post("/startClass", startClass);
-router.post("/dissmissClass", dissmissClass);
+router.post("/dismissClass", dismissClass);
 router.post("/markAttendance", markAttendance);
 router.get("/getClassesByCourseId", getClassesByCourseId);
 
