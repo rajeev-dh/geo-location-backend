@@ -26,7 +26,7 @@ const getCourses = async (req, res) => {
       req.user.role === "student"
         ? { students: req.user._id }
         : { teacher: req.user._id };
-    const courses = await Course.find(query, { students: 0, __v: 0 });
+    const courses = await Course.find(query, { __v: 0 });
     res
       .status(200)
       .json({ error: false, data: courses, message: "Available Course found" });

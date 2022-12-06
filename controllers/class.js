@@ -84,4 +84,28 @@ const getClassesByCourseId = async (req, res) => {
   }
 };
 
-export { startClass, dismissClass, markAttendance, getClassesByCourseId };
+const getClassById = async (req, res) => {
+  try {
+    const { classId } = req.query;
+    const foundClass = await Class.findById(classId, { __v: 0 }).populate(
+      "students",
+      "name registrationNo -_id"
+    );
+    res.status(200).json({
+      error: false,
+      data: foundClass,
+      message: "Available Class found",
+    });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ error: true, message: "Internal Server Error" });
+  }
+};
+
+export {
+  startClass,
+  dismissClass,
+  markAttendance,
+  getClassesByCourseId,
+  getClassById,
+};
