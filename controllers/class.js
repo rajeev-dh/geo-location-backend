@@ -38,7 +38,8 @@ const dissmissClass = async (req, res) => {
 
 const markAttendance = async (req, res) => {
   try {
-    const { courseId, studentId } = req.body;
+    const { courseId } = req.body;
+    const studentId = req.user._id;
     const runningClass = await Class.findOne({ courseId, active: true });
     if (!runningClass)
       return res
@@ -66,4 +67,21 @@ const markAttendance = async (req, res) => {
   }
 };
 
-export { startClass, dissmissClass, markAttendance };
+const getClassesByCourseId = async (req, res) => {
+  try {
+    const { courseId } = req.query;
+    const query =
+      req.user.role === "student"
+        ? { students: req.user._id, courseId }
+        : { courseId };
+    const classes = await Class.find(query);
+    res
+      .status(200)
+      .json({ error: false, data: classes, message: "Available Course found" });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ error: true, message: "Internal Server Error" });
+  }
+};
+
+export { startClass, dissmissClass, markAttendance, getClassesByCourseId };

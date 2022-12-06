@@ -2,12 +2,12 @@ import Course from "../models/Course.js";
 
 const createCourse = async (req, res) => {
   try {
-    const { courseName, teacher } = req.body;
+    const { courseName } = req.body;
     const courseCode = generateCourseCode(6);
     const newCourse = await new Course({
       courseName,
       courseCode,
-      teacher,
+      teacher: req.user._id,
     }).save();
     res.status(201).json({
       error: false,
@@ -23,8 +23,8 @@ const createCourse = async (req, res) => {
 const getCourses = async (req, res) => {
   try {
     const query =
-      req.user === "student"
-        ? { students: req.user_id }
+      req.user.role === "student"
+        ? { students: req.user._id }
         : { teacher: req.user._id };
     const courses = await Course.find(query, { students: 0, __v: 0 });
     res
@@ -38,7 +38,8 @@ const getCourses = async (req, res) => {
 
 const enrollCourse = async (req, res) => {
   try {
-    const { courseCode, studentId } = req.body;
+    const { courseCode } = req.body;
+    const studentId = req.user._id;
     const course = await Course.findOne({ courseCode });
     if (!course)
       return res
@@ -54,7 +55,8 @@ const enrollCourse = async (req, res) => {
         .json({ error: true, message: "Student already enrolled" });
     const enrolledCourse = await Course.findOneAndUpdate(
       { courseCode },
-      { $push: { students: studentId } }
+      { $push: { students: studentId } },
+      { new: true }
     );
     res.status(200).json({
       error: false,
@@ -70,10 +72,10 @@ const enrollCourse = async (req, res) => {
 export { createCourse, getCourses, enrollCourse };
 
 const generateCourseCode = (count) => {
-  var chars = "acdefhiklmnoqrstuvwxyz0123456789".split("");
-  var result = "";
-  for (var i = 0; i < count; i++) {
-    var x = Math.floor(Math.random() * chars.length);
+  let chars = "acdefhiklmnoqrstuvwxyz0123456789".split("");
+  let result = "";
+  for (let i = 0; i < count; i++) {
+    let x = Math.floor(Math.random() * chars.length);
     result += chars[x];
   }
   return result;
