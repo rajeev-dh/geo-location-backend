@@ -3,6 +3,11 @@ import Class from "../models/Class.js";
 const startClass = async (req, res) => {
   try {
     const { courseId, location } = req.body;
+    const runningClass = await Class.findOne({ courseId, active: true });
+    if (runningClass)
+      return res
+        .status(400)
+        .json({ error: true, message: "Already Have a running class" });
     const newClass = await new Class({ courseId, location }).save();
     res.status(201).json({
       error: false,
@@ -33,10 +38,13 @@ const dissmissClass = async (req, res) => {
 
 const markAttendance = async (req, res) => {
   try {
-    const { classId, studentId } = req.body;
-    const runningClass = await Class.findById(classId);
+    const { courseId, studentId } = req.body;
+    const runningClass = await Class.findOne({ courseId, active: true });
     if (!runningClass)
-      return res.status(404).json({ error: false, message: "Class not found" });
+      return res
+        .status(404)
+        .json({ error: false, message: "No running class not found" });
+    const classId = runningClass._id;
     const studentClass = await Class.findOne({
       _id: classId,
       students: studentId,
