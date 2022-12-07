@@ -22,10 +22,15 @@ const startClass = async (req, res) => {
 
 const dismissClass = async (req, res) => {
   try {
-    const { classId } = req.body;
-    const oldClass = await Class.findByIdAndUpdate(classId, { active: false });
+    const { courseId } = req.body;
+    const oldClass = await Class.findOneAndUpdate(
+      { courseId },
+      { active: false }
+    );
     if (!oldClass)
-      return res.status(404).json({ error: true, message: "Class not found" });
+      return res
+        .status(404)
+        .json({ error: true, message: "No running Class found" });
     res.status(200).json({
       error: false,
       message: "Class dismissed successfully",
