@@ -38,7 +38,7 @@ const dismissClass = async (req, res) => {
 
 const markAttendance = async (req, res) => {
   try {
-    const { courseId } = req.body;
+    const { courseId, location } = req.body;
     const studentId = req.user._id;
     const runningClass = await Class.findOne({ courseId, active: true });
     if (!runningClass)
@@ -54,6 +54,18 @@ const markAttendance = async (req, res) => {
       return res
         .status(400)
         .json({ error: true, message: "Student already marked Attendance" });
+    if (
+      Math.sqrt(
+        (+runningClass.location.latitude - +location.latitude) *
+          (+runningClass.location.latitude - +location.latitude) +
+          (+runningClass.location.longitude - +location.longitude) *
+            (+runningClass.location.longitude - +location.longitude)
+      ) > 25
+    ) {
+      return res
+        .status(400)
+        .json({ error: true, message: "You are  too far from class" });
+    }
     const newClass = await Class.findByIdAndUpdate(classId, {
       $push: { students: studentId },
     });
