@@ -1,4 +1,8 @@
+import path from "path";
+
 import Class from "../models/Class.js";
+import Course from "../models/Course.js";
+import { exportToExcel } from "../utils/genrateExcel.js";
 
 const startClass = async (req, res) => {
   try {
@@ -24,7 +28,7 @@ const dismissClass = async (req, res) => {
   try {
     const { courseId } = req.body;
     const oldClass = await Class.findOneAndUpdate(
-      { courseId },
+      { courseId, active: true },
       { active: false }
     );
     if (!oldClass)
@@ -119,10 +123,57 @@ const getClassById = async (req, res) => {
   }
 };
 
+const getAllAttendanceByCourseIdInExcel = async (req, res) => {
+  const UserList = [
+    {
+      fname: "rajeev",
+      lname: "sahu",
+      email: "rajeev.sahu@gmail.com",
+      gender: "male",
+    },
+    {
+      fname: "rajat",
+      lname: "sahu",
+      email: "rajat.sahu@gmail.com",
+      gender: "male",
+    },
+    {
+      fname: "ravindra",
+      lname: "sahu",
+      email: "ravindra.sahu@gmail.com",
+      gender: "male",
+    },
+    {
+      fname: "raj",
+      lname: "sahu",
+      email: "raj.sahu@gmail.com",
+      gender: "male",
+    },
+  ];
+  const workSheetName = "students";
+  const filePath = "./attendance.xlsx";
+  try {
+    const { courseId } = req.query;
+    const classesDates = await Class.find({ courseId }).distinct("createdDate");
+    const workSheetColumnName = [
+      "Registration No",
+      "Student Name",
+      ...classesDates,
+    ];
+    const users = await Course.findById(courseId).distinct("students");
+    exportToExcel(UserList, workSheetColumnName, workSheetName, filePath);
+    res.sendFile(path.resolve(filePath));
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ error: true, message: "Internal Server Error" });
+  }
+};
+
 export {
   startClass,
   dismissClass,
   markAttendance,
   getClassesByCourseId,
   getClassById,
+  getAllAttendanceByCourseIdInExcel,
 };
