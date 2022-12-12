@@ -69,7 +69,29 @@ const enrollCourse = async (req, res) => {
   }
 };
 
-export { createCourse, getCourses, enrollCourse };
+const getCourseById = async (req, res) => {
+  try {
+    const { courseId } = req.query;
+    const course = await Course.findById(courseId).populate(
+      "students",
+      "registrationNo name"
+    );
+    if (!course)
+      return res
+        .status(404)
+        .json({ error: false, message: "Course not found" });
+    res.status(200).json({
+      error: false,
+      data: course,
+      message: "Course Found successfully",
+    });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ error: true, message: "Internal Server Error" });
+  }
+};
+
+export { createCourse, getCourses, enrollCourse, getCourseById };
 
 const generateCourseCode = (count) => {
   let chars = "acdefhiklmnoqrstuvwxyz0123456789".split("");

@@ -118,10 +118,12 @@ const getClassById = async (req, res) => {
       "students",
       "name registrationNo"
     );
+    if (!foundClass)
+      return res.status(404).json({ error: false, message: "Class not found" });
     res.status(200).json({
       error: false,
       data: foundClass,
-      message: "Available Class found",
+      message: "Class found successfully",
     });
   } catch (err) {
     console.log(err);
