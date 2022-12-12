@@ -77,7 +77,7 @@ const markAttendance = async (req, res) => {
     ) {
       return res
         .status(400)
-        .json({ error: true, message: "You are  too far from class" });
+        .json({ error: true, message: "You are too far from class" });
     }
     const newClass = await Class.findByIdAndUpdate(classId, {
       $push: { students: studentId },
@@ -100,9 +100,11 @@ const getClassesByCourseId = async (req, res) => {
         ? { students: req.user._id, courseId }
         : { courseId };
     const classes = await Class.find(query);
-    res
-      .status(200)
-      .json({ error: false, data: classes, message: "Available Course found" });
+    res.status(200).json({
+      error: false,
+      data: classes,
+      message: "Available classes found",
+    });
   } catch (err) {
     console.log(err);
     res.status(500).json({ error: true, message: "Internal Server Error" });
@@ -114,7 +116,7 @@ const getClassById = async (req, res) => {
     const { classId } = req.query;
     const foundClass = await Class.findById(classId, { __v: 0 }).populate(
       "students",
-      "name registrationNo -_id"
+      "name registrationNo"
     );
     res.status(200).json({
       error: false,
@@ -128,44 +130,41 @@ const getClassById = async (req, res) => {
 };
 
 const getAllAttendanceByCourseIdInExcel = async (req, res) => {
-  const UserList = [
-    {
-      fname: "rajeev",
-      lname: "sahu",
-      email: "rajeev.sahu@gmail.com",
-      gender: "male",
-    },
-    {
-      fname: "rajat",
-      lname: "sahu",
-      email: "rajat.sahu@gmail.com",
-      gender: "male",
-    },
-    {
-      fname: "ravindra",
-      lname: "sahu",
-      email: "ravindra.sahu@gmail.com",
-      gender: "male",
-    },
-    {
-      fname: "raj",
-      lname: "sahu",
-      email: "raj.sahu@gmail.com",
-      gender: "male",
-    },
-  ];
   const workSheetName = "students";
   const filePath = "./attendance.xlsx";
   try {
     const { courseId } = req.query;
-    const classesDates = await Class.find({ courseId }).distinct("createdDate");
+    const classes = await Class.find({ courseId });
+    const classesDates = classes.map((cls) =>
+      cls.createdDate.toLocaleDateString("pt-PT")
+    );
     const workSheetColumnName = [
       "Registration No",
       "Student Name",
       ...classesDates,
     ];
-    const users = await Course.findById(courseId).distinct("students");
-    exportToExcel(UserList, workSheetColumnName, workSheetName, filePath);
+    const course = await Course.findById(courseId).populate(
+      "students",
+      "name registrationNo"
+    );
+    const users = course.students;
+    let userList = [];
+    for (let i = 0; i < users.length; i++) {
+      let d = [users[i].registrationNo, users[i].name];
+      for (let j = 0; j < classes.length; j++) {
+        if (
+          classes[j].students.find(
+            (stu) => stu.toString() === users[i]._id.toString()
+          )
+        ) {
+          d = [...d, "P"];
+        } else {
+          d = [...d, ""];
+        }
+      }
+      userList.push(d);
+    }
+    exportToExcel(userList, workSheetColumnName, workSheetName, filePath);
     res.sendFile(path.resolve(filePath));
   } catch (err) {
     console.log(err);

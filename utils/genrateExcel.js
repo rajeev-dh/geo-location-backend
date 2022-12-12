@@ -1,15 +1,7 @@
 import XLSX from "xlsx";
 import path from "path";
 
-const exportToExcel = (
-  UserList,
-  workSheetColumnName,
-  workSheetName,
-  filePath
-) => {
-  const data = UserList.map((user) => {
-    return [user.fname, user.lname, user.email, user.gender];
-  });
+const exportToExcel = (data, workSheetColumnName, workSheetName, filePath) => {
   const wb = XLSX.utils.book_new();
   const workSheetData = [workSheetColumnName, ...data];
   const ws = XLSX.utils.aoa_to_sheet(workSheetData);
