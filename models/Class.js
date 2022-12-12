@@ -5,7 +5,6 @@ const Schema = mongoose.Schema;
 const classSchema = new Schema({
   createdDate: {
     type: Date,
-    default: new Date(),
     required: true,
   },
   courseId: {

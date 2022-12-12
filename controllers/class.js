@@ -12,7 +12,11 @@ const startClass = async (req, res) => {
       return res
         .status(400)
         .json({ error: true, message: "Already Have a running class" });
-    const newClass = await new Class({ courseId, location }).save();
+    const newClass = await new Class({
+      courseId,
+      location,
+      createdDate: new Date(),
+    }).save();
     res.status(201).json({
       error: false,
       data: newClass,
@@ -53,7 +57,7 @@ const markAttendance = async (req, res) => {
     if (!runningClass)
       return res
         .status(404)
-        .json({ error: false, message: "No running class not found" });
+        .json({ error: false, message: "No running class found" });
     const classId = runningClass._id;
     const studentClass = await Class.findOne({
       _id: classId,
