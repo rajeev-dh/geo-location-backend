@@ -10,7 +10,10 @@ import {
 const login = async (req, res) => {
   try {
     const { email } = req.body;
-    req.body = { ...req.body, email: email.replaceAll(" ", "").toLowerCase() };
+    req.body = {
+      ...req.body,
+      email: email.replace(/\s/g, "").toLowerCase(),
+    };
     const { error } = logInBodyValidation(req.body);
     if (error)
       return res
@@ -52,7 +55,10 @@ const login = async (req, res) => {
 const signUp = async (req, res) => {
   try {
     const { email } = req.body;
-    req.body = { ...req.body, email: email.replaceAll(" ", "").toLowerCase() };
+    req.body = {
+      ...req.body,
+      email: email.replace(/\s/g, "").toLowerCase(),
+    };
     const { error } = signUpBodyValidation();
     if (error)
       return res
