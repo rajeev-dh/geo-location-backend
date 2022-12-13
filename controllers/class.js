@@ -103,7 +103,7 @@ const getClassesByCourseId = async (req, res) => {
     res.status(200).json({
       error: false,
       data: classes,
-      message: "Available classes found",
+      message: `Available classes found: ${classes.length}`,
     });
   } catch (err) {
     console.log(err);
@@ -119,7 +119,10 @@ const getClassById = async (req, res) => {
       "name registrationNo"
     );
     if (!foundClass)
-      return res.status(404).json({ error: false, message: "Class not found" });
+      return res.status(404).json({
+        error: false,
+        message: `${foundClass.students.length} student found`,
+      });
     res.status(200).json({
       error: false,
       data: foundClass,

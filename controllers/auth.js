@@ -49,7 +49,9 @@ const login = async (req, res) => {
 
 const signUp = async (req, res) => {
   try {
-    const { error } = signUpBodyValidation(req.body);
+    const { email } = req.body;
+    req.body = { ...req.body, email: email.replaceAll(" ", "").toLowerCase() };
+    const { error } = signUpBodyValidation();
     if (error)
       return res
         .status(400)
