@@ -9,6 +9,8 @@ import {
 
 const login = async (req, res) => {
   try {
+    const { email } = req.body;
+    req.body = { ...req.body, email: email.replaceAll(" ", "").toLowerCase() };
     const { error } = logInBodyValidation(req.body);
     if (error)
       return res

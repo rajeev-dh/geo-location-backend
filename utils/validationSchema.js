@@ -14,7 +14,7 @@ const signUpBodyValidation = (body) => {
 const logInBodyValidation = (body) => {
   const schema = Joi.object({
     email: Joi.string().email().required().label("Email"),
-    password: Joi.string().min(8).required().label("Password"),
+    password: Joi.string().min(6).required().label("Password"),
   });
   return schema.validate(body);
 };
