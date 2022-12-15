@@ -23,6 +23,14 @@ const courseSchema = new Schema({
       ref: "User",
     },
   ],
+  radius: {
+    type: Number,
+    default: 25,
+  },
+  activeClass: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const Course = mongoose.model("Course", courseSchema);

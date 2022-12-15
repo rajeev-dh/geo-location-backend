@@ -6,7 +6,7 @@ import { exportToExcel } from "../utils/genrateExcel.js";
 
 const startClass = async (req, res) => {
   try {
-    const { courseId, location } = req.body;
+    const { courseId, location, radius } = req.body;
     const runningClass = await Class.findOne({ courseId, active: true });
     if (runningClass)
       return res
@@ -15,8 +15,10 @@ const startClass = async (req, res) => {
     const newClass = await new Class({
       courseId,
       location,
+      radius,
       createdDate: new Date(),
     }).save();
+    await Course.updateOne({ _id: courseId }, { activeClass: true, radius });
     res.status(201).json({
       error: false,
       data: newClass,
@@ -35,6 +37,7 @@ const dismissClass = async (req, res) => {
       { courseId, active: true },
       { active: false }
     );
+    await Course.updateOne({ _id: courseId }, { activeClass: false });
     if (!oldClass)
       return res
         .status(404)
@@ -157,15 +160,11 @@ const getAllAttendanceByCourseIdInExcel = async (req, res) => {
     for (let i = 0; i < users.length; i++) {
       let d = [users[i].registrationNo, users[i].name];
       for (let j = 0; j < classes.length; j++) {
-        if (
-          classes[j].students.find(
-            (stu) => stu.toString() === users[i]._id.toString()
-          )
-        ) {
-          d = [...d, "P"];
-        } else {
-          d = [...d, ""];
-        }
+        d = classes[j].students.find(
+          (stu) => stu.toString() === users[i]._id.toString()
+        )
+          ? [...d, "P"]
+          : [...d, ""];
       }
       userList.push(d);
     }

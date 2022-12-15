@@ -22,6 +22,10 @@ const classSchema = new Schema({
       required: true,
     },
   },
+  radius: {
+    type: Number,
+    default: 25,
+  },
   students: [
     {
       type: mongoose.Schema.Types.ObjectId,
