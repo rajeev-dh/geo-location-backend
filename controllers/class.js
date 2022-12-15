@@ -76,7 +76,7 @@ const markAttendance = async (req, res) => {
           (+runningClass.location.latitude - +location.latitude) +
           (+runningClass.location.longitude - +location.longitude) *
             (+runningClass.location.longitude - +location.longitude)
-      ) > 25
+      ) > runningClass.radius
     ) {
       return res
         .status(400)
@@ -168,7 +168,7 @@ const getAllAttendanceByCourseIdInExcel = async (req, res) => {
       }
       userList.push(d);
     }
-    exportToExcel(userList, workSheetColumnName, workSheetName, filePath);
+    await exportToExcel(userList, workSheetColumnName, workSheetName, filePath);
     res.sendFile(path.resolve(filePath));
   } catch (err) {
     console.log(err);
