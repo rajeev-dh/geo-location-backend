@@ -60,7 +60,7 @@ const markAttendance = async (req, res) => {
     if (!runningClass)
       return res
         .status(404)
-        .json({ error: false, message: "No running class found" });
+        .json({ error: true, message: "No running class found" });
     const classId = runningClass._id;
     const studentClass = await Class.findOne({
       _id: classId,
@@ -123,7 +123,7 @@ const getClassById = async (req, res) => {
     );
     if (!foundClass)
       return res.status(404).json({
-        error: false,
+        error: true,
         message: "Class not found",
       });
     res.status(200).json({
@@ -184,7 +184,7 @@ const deleteClassById = async (req, res) => {
       return res.status(404).json({ error: true, message: "Class not found" });
     res
       .status(200)
-      .json({ error: true, message: "Class deleted successfully" });
+      .json({ error: false, message: "Class deleted successfully" });
   } catch (err) {
     console.log(err);
     res.status(500).json({ error: true, message: "Internal Server Error" });

@@ -43,9 +43,7 @@ const enrollCourse = async (req, res) => {
     const studentId = req.user._id;
     const course = await Course.findOne({ courseCode });
     if (!course)
-      return res
-        .status(404)
-        .json({ error: false, message: "Course not found" });
+      return res.status(404).json({ error: true, message: "Course not found" });
     const studentCourse = await Course.findOne({
       courseCode,
       students: studentId,
@@ -78,9 +76,7 @@ const getCourseById = async (req, res) => {
       "registrationNo name"
     );
     if (!course)
-      return res
-        .status(404)
-        .json({ error: false, message: "Course not found" });
+      return res.status(404).json({ error: true, message: "Course not found" });
     res.status(200).json({
       error: false,
       data: course,
@@ -101,7 +97,7 @@ const deleteCourseById = async (req, res) => {
     await Class.deleteMany({ courseId });
     res
       .status(200)
-      .json({ error: true, message: "Course deleted successfully" });
+      .json({ error: false, message: "Course deleted successfully" });
   } catch (err) {
     console.log(err);
     res.status(500).json({ error: true, message: "Internal Server Error" });
