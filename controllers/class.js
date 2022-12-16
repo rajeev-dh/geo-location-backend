@@ -176,6 +176,21 @@ const getAllAttendanceByCourseIdInExcel = async (req, res) => {
   }
 };
 
+const deleteClassById = async (req, res) => {
+  try {
+    const { classId } = req.query;
+    const deletedClass = await Class.findByIdAndDelete(classId);
+    if (!deletedClass)
+      return res.status(404).json({ error: true, message: "Class not found" });
+    res
+      .status(200)
+      .json({ error: true, message: "Class deleted successfully" });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ error: true, message: "Internal Server Error" });
+  }
+};
+
 export {
   startClass,
   dismissClass,
@@ -183,4 +198,5 @@ export {
   getClassesByCourseId,
   getClassById,
   getAllAttendanceByCourseIdInExcel,
+  deleteClassById,
 };

@@ -7,6 +7,7 @@ import {
   getClassesByCourseId,
   getClassById,
   getAllAttendanceByCourseIdInExcel,
+  deleteClassById,
 } from "../controllers/class.js";
 
 const router = Router();
@@ -20,5 +21,6 @@ router.get(
   "/getAllAttendanceByCourseIdInExcel",
   getAllAttendanceByCourseIdInExcel
 );
+router.delete("/deleteClassById", deleteClassById);
 
 export default router;

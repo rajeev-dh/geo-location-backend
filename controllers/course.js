@@ -1,3 +1,4 @@
+import Class from "../models/Class.js";
 import Course from "../models/Course.js";
 
 const createCourse = async (req, res) => {
@@ -91,7 +92,29 @@ const getCourseById = async (req, res) => {
   }
 };
 
-export { createCourse, getCourses, enrollCourse, getCourseById };
+const deleteCourseById = async (req, res) => {
+  try {
+    const { courseId } = req.query;
+    const deletedCourse = await Course.findByIdAndDelete(courseId);
+    if (!deletedCourse)
+      return res.status(404).json({ error: true, message: "Course not found" });
+    await Class.deleteMany({ courseId });
+    res
+      .status(200)
+      .json({ error: true, message: "Course deleted successfully" });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ error: true, message: "Internal Server Error" });
+  }
+};
+
+export {
+  createCourse,
+  getCourses,
+  enrollCourse,
+  getCourseById,
+  deleteCourseById,
+};
 
 const generateCourseCode = (count) => {
   let chars = "acdefhiklmnoqrstuvwxyz0123456789".split("");
