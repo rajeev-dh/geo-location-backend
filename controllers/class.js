@@ -1,9 +1,15 @@
+import mongoose from "mongoose";
+
 import Class from "../models/Class.js";
 import Course from "../models/Course.js";
 
 const startClass = async (req, res) => {
   try {
     const { courseId, location, radius } = req.body;
+    if (!mongoose.Types.ObjectId.isValid(courseId))
+      return res
+        .status(400)
+        .json({ error: true, message: "Course Id is not valid" });
     const runningClass = await Class.findOne({ courseId, active: true });
     if (runningClass)
       return res
@@ -30,6 +36,10 @@ const startClass = async (req, res) => {
 const dismissClass = async (req, res) => {
   try {
     const { courseId } = req.body;
+    if (!mongoose.Types.ObjectId.isValid(courseId))
+      return res
+        .status(400)
+        .json({ error: true, message: "Course Id is not valid" });
     const oldClass = await Class.findOneAndUpdate(
       { courseId, active: true },
       { active: false }
@@ -52,6 +62,10 @@ const dismissClass = async (req, res) => {
 const markAttendance = async (req, res) => {
   try {
     const { courseId, location } = req.body;
+    if (!mongoose.Types.ObjectId.isValid(courseId))
+      return res
+        .status(400)
+        .json({ error: true, message: "Course Id is not valid" });
     const studentId = req.user._id;
     const runningClass = await Class.findOne({ courseId, active: true });
     if (!runningClass)
@@ -79,7 +93,7 @@ const markAttendance = async (req, res) => {
         .status(400)
         .json({ error: true, message: "You are too far from class" });
     }
-    const newClass = await Class.findByIdAndUpdate(classId, {
+    await Class.findByIdAndUpdate(classId, {
       $push: { students: studentId },
     });
     res.status(200).json({
@@ -95,6 +109,10 @@ const markAttendance = async (req, res) => {
 const getClassesByCourseId = async (req, res) => {
   try {
     const { courseId } = req.query;
+    if (!mongoose.Types.ObjectId.isValid(courseId))
+      return res
+        .status(400)
+        .json({ error: true, message: "Course Id is not valid" });
     const query =
       req.user.role === "student"
         ? { students: req.user._id, courseId }
@@ -114,6 +132,10 @@ const getClassesByCourseId = async (req, res) => {
 const getClassById = async (req, res) => {
   try {
     const { classId } = req.query;
+    if (!mongoose.Types.ObjectId.isValid(classId))
+      return res
+        .status(400)
+        .json({ error: true, message: "Class Id is not valid" });
     const foundClass = await Class.findById(classId, { __v: 0 }).populate(
       "students",
       "name registrationNo"
@@ -137,6 +159,10 @@ const getClassById = async (req, res) => {
 const deleteClassById = async (req, res) => {
   try {
     const { classId } = req.query;
+    if (!mongoose.Types.ObjectId.isValid(classId))
+      return res
+        .status(400)
+        .json({ error: true, message: "Class Id is not valid" });
     const deletedClass = await Class.findByIdAndDelete(classId);
     if (!deletedClass)
       return res.status(404).json({ error: true, message: "Class not found" });

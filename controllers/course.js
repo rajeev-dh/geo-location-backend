@@ -1,4 +1,4 @@
-import path from "path";
+import mongoose from "mongoose";
 
 import Class from "../models/Class.js";
 import Course from "../models/Course.js";
@@ -75,6 +75,10 @@ const enrollCourse = async (req, res) => {
 const getCourseById = async (req, res) => {
   try {
     const { courseId } = req.query;
+    if (!mongoose.Types.ObjectId.isValid(courseId))
+      return res
+        .status(400)
+        .json({ error: true, message: "Course Id is not valid" });
     const course = await Course.findById(courseId).populate(
       "students",
       "registrationNo name"
@@ -95,6 +99,10 @@ const getCourseById = async (req, res) => {
 const deleteCourseById = async (req, res) => {
   try {
     const { courseId } = req.query;
+    if (!mongoose.Types.ObjectId.isValid(courseId))
+      return res
+        .status(400)
+        .json({ error: true, message: "Course Id is not valid" });
     const deletedCourse = await Course.findByIdAndDelete(courseId);
     if (!deletedCourse)
       return res.status(404).json({ error: true, message: "Course not found" });
@@ -113,6 +121,11 @@ const sendAttendanceViaEmail = async (req, res) => {
   const filePath = "./attendance.xlsx";
   try {
     const { courseId } = req.query;
+    console.log("courseId: ", courseId);
+    if (!mongoose.Types.ObjectId.isValid(courseId))
+      return res
+        .status(400)
+        .json({ error: true, message: "Course Id is not valid" });
     const classes = await Class.find({ courseId });
     const classesDates = classes.map((cls) =>
       cls.createdDate.toLocaleDateString("pt-PT")
