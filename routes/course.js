@@ -6,7 +6,7 @@ import {
   enrollCourse,
   getCourseById,
   getCourses,
-  sendAttendanceViaMail,
+  sendAttendanceViaEmail,
 } from "../controllers/course.js";
 
 const router = Router();
@@ -15,7 +15,7 @@ router.post("/createCourse", createCourse);
 router.get("/getCourses", getCourses);
 router.post("/enrollCourse", enrollCourse);
 router.get("/getCourseById", getCourseById);
-router.get("/sendAttendanceViaMail", sendAttendanceViaMail);
+router.get("/sendAttendanceViaMail", sendAttendanceViaEmail);
 router.delete("/deleteCourseById", deleteCourseById);
 
 export default router;

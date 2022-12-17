@@ -3,6 +3,7 @@ import path from "path";
 import Class from "../models/Class.js";
 import Course from "../models/Course.js";
 import { exportToExcel } from "../utils/genrateExcel.js";
+import sendEmail from "../utils/sendEmail.js";
 
 const createCourse = async (req, res) => {
   try {
@@ -107,7 +108,7 @@ const deleteCourseById = async (req, res) => {
   }
 };
 
-const sendAttendanceViaMail = async (req, res) => {
+const sendAttendanceViaEmail = async (req, res) => {
   const workSheetName = "students";
   const filePath = "./attendance.xlsx";
   try {
@@ -121,10 +122,9 @@ const sendAttendanceViaMail = async (req, res) => {
       "Student Name",
       ...classesDates,
     ];
-    const course = await Course.findById(courseId).populate(
-      "students",
-      "name registrationNo"
-    );
+    const course = await Course.findById(courseId)
+      .populate("students", "name registrationNo")
+      .populate("teacher", "email");
     const users = course.students;
     let userList = [];
     for (let i = 0; i < users.length; i++) {
@@ -139,6 +139,7 @@ const sendAttendanceViaMail = async (req, res) => {
       userList.push(d);
     }
     await exportToExcel(userList, workSheetColumnName, workSheetName, filePath);
+    await sendEmail(course.teacher.email, course.courseName);
     res
       .status(200)
       .json({ error: false, message: "Attendance sent successfully" });
@@ -154,7 +155,7 @@ export {
   enrollCourse,
   getCourseById,
   deleteCourseById,
-  sendAttendanceViaMail,
+  sendAttendanceViaEmail,
 };
 
 const generateCourseCode = (count) => {

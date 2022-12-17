@@ -1,6 +1,6 @@
 import nodemailer from "nodemailer";
 
-const sendEmail = async () => {
+const sendEmail = async (email, courseName) => {
   try {
     let transporter = nodemailer.createTransport({
       host: "smtp.gmail.com",
@@ -14,15 +14,20 @@ const sendEmail = async () => {
 
     // send mail with defined transport object
     let info = await transporter.sendMail({
-      from: process.env.SMTP_USER_NAME, // sender address
-      to: "196301078@gkv.ac.in", // list of receivers
-      subject: "Hello ✔", // Subject line
-      text: "Hello world?", // plain text body
-      html: "<b>Hello world?</b>", // html body
+      from: `"no-reply" ${process.env.SMTP_USER_NAME}`, // sender address
+      to: email, // list of receivers
+      subject: "Course Attendance", // Subject line
+      text: `Complete Attendance for ${courseName}`, // plain text body
+      html: `<b>Complete Attendance for ${courseName}</b>`, // html body
+      attachments: [
+        {
+          // filename and content type is derived from path
+          path: "./attendance.xlsx",
+        },
+      ],
     });
 
     console.log("Message sent: %s", info.messageId);
-    console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
   } catch (err) {
     console.log(err);
   }
