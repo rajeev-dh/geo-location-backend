@@ -1,8 +1,5 @@
-import path from "path";
-
 import Class from "../models/Class.js";
 import Course from "../models/Course.js";
-import { exportToExcel } from "../utils/genrateExcel.js";
 
 const startClass = async (req, res) => {
   try {
@@ -137,45 +134,6 @@ const getClassById = async (req, res) => {
   }
 };
 
-const getAllAttendanceByCourseIdInExcel = async (req, res) => {
-  const workSheetName = "students";
-  const filePath = "./attendance.xlsx";
-  try {
-    const { courseId } = req.query;
-    const classes = await Class.find({ courseId });
-    const classesDates = classes.map((cls) =>
-      cls.createdDate.toLocaleDateString("pt-PT")
-    );
-    const workSheetColumnName = [
-      "Registration No",
-      "Student Name",
-      ...classesDates,
-    ];
-    const course = await Course.findById(courseId).populate(
-      "students",
-      "name registrationNo"
-    );
-    const users = course.students;
-    let userList = [];
-    for (let i = 0; i < users.length; i++) {
-      let d = [users[i].registrationNo, users[i].name];
-      for (let j = 0; j < classes.length; j++) {
-        d = classes[j].students.find(
-          (stu) => stu.toString() === users[i]._id.toString()
-        )
-          ? [...d, "P"]
-          : [...d, ""];
-      }
-      userList.push(d);
-    }
-    await exportToExcel(userList, workSheetColumnName, workSheetName, filePath);
-    res.sendFile(path.resolve(filePath));
-  } catch (err) {
-    console.log(err);
-    res.status(500).json({ error: true, message: "Internal Server Error" });
-  }
-};
-
 const deleteClassById = async (req, res) => {
   try {
     const { classId } = req.query;
@@ -197,6 +155,5 @@ export {
   markAttendance,
   getClassesByCourseId,
   getClassById,
-  getAllAttendanceByCourseIdInExcel,
   deleteClassById,
 };

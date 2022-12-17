@@ -6,7 +6,6 @@ import {
   markAttendance,
   getClassesByCourseId,
   getClassById,
-  getAllAttendanceByCourseIdInExcel,
   deleteClassById,
 } from "../controllers/class.js";
 
@@ -17,10 +16,6 @@ router.post("/dismissClass", dismissClass);
 router.post("/markAttendance", markAttendance);
 router.get("/getClassesByCourseId", getClassesByCourseId);
 router.get("/getClassById", getClassById);
-router.get(
-  "/getAllAttendanceByCourseIdInExcel",
-  getAllAttendanceByCourseIdInExcel
-);
 router.delete("/deleteClassById", deleteClassById);
 
 export default router;
