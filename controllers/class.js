@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { getPreciseDistance } from "geolib";
 
 import Class from "../models/Class.js";
 import Course from "../models/Course.js";
@@ -81,15 +82,31 @@ const markAttendance = async (req, res) => {
       return res
         .status(400)
         .json({ error: true, message: "Student already marked Attendance" });
-    const distance = Math.sqrt(
-      (+runningClass.location.latitude - +location.latitude) *
-        (+runningClass.location.latitude - +location.latitude) +
-        (+runningClass.location.longitude - +location.longitude) *
-          (+runningClass.location.longitude - +location.longitude)
+    // const distance = Math.sqrt(
+    //   (+runningClass.location.latitude - +location.latitude) *
+    //     (+runningClass.location.latitude - +location.latitude) +
+    //     (+runningClass.location.longitude - +location.longitude) *
+    //       (+runningClass.location.longitude - +location.longitude)
+    // );
+    function distance(lat1, lon1, lat2, lon2) {
+      var p = 0.017453292519943295; // Math.PI / 180
+      var c = Math.cos;
+      var a =
+        0.5 -
+        c((lat2 - lat1) * p) / 2 +
+        (c(lat1 * p) * c(lat2 * p) * (1 - c((lon2 - lon1) * p))) / 2;
+
+      return 12742 * 1000 * Math.asin(Math.sqrt(a)); // 2 * R; R = 6371 km
+    }
+    const distanc = distance(
+      runningClass.location.latitude,
+      runningClass.location.longitude,
+      location.latitude,
+      location.longitude
     );
     console.log(
       "distance: ",
-      distance,
+      distanc,
       "class radius: ",
       runningClass.radius,
       "teacher location: ",
@@ -97,7 +114,7 @@ const markAttendance = async (req, res) => {
       "student location: ",
       location
     );
-    if (distance > runningClass.radius) {
+    if (distanc > runningClass.radius) {
       return res
         .status(400)
         .json({ error: true, message: "You are too far from class" });
