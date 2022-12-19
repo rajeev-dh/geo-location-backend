@@ -81,14 +81,23 @@ const markAttendance = async (req, res) => {
       return res
         .status(400)
         .json({ error: true, message: "Student already marked Attendance" });
-    if (
-      Math.sqrt(
-        (+runningClass.location.latitude - +location.latitude) *
-          (+runningClass.location.latitude - +location.latitude) +
-          (+runningClass.location.longitude - +location.longitude) *
-            (+runningClass.location.longitude - +location.longitude)
-      ) > runningClass.radius
-    ) {
+    const distance = Math.sqrt(
+      (+runningClass.location.latitude - +location.latitude) *
+        (+runningClass.location.latitude - +location.latitude) +
+        (+runningClass.location.longitude - +location.longitude) *
+          (+runningClass.location.longitude - +location.longitude)
+    );
+    console.log(
+      "distance: ",
+      distance,
+      "class radius: ",
+      runningClass.radius,
+      "teacher location: ",
+      runningClass.location,
+      "student location: ",
+      location
+    );
+    if (distance > runningClass.radius) {
       return res
         .status(400)
         .json({ error: true, message: "You are too far from class" });
