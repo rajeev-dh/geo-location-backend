@@ -1,7 +1,11 @@
 import jwt from "jsonwebtoken";
 
 const auth = async (req, res, next) => {
-  const token = req.header("x-access-token");
+  const token =
+    req.headers["x-access-token"] ||
+    (req.headers["authorization"]
+      ? req.headers["authorization"].split(" ")[1]
+      : null);
   if (!token)
     return res
       .status(403)

@@ -13,11 +13,12 @@ config();
 dbConnect();
 
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 app.get("/", (req, res) => {
   res.status(200).json({ message: "API is working" });
 });
-app.use("/api", authRoutes);
+app.use("/api/auth", authRoutes);
 app.use(authMiddleWare);
 app.use("/api", classRoutes);
 app.use("/api", courseRoutes);

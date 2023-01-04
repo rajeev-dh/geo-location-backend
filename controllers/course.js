@@ -152,7 +152,20 @@ const sendAttendanceViaEmail = async (req, res) => {
       userList.push(d);
     }
     await exportToExcel(userList, workSheetColumnName, workSheetName, filePath);
-    await sendEmail(course.teacher.email, course.courseName);
+    const mailOptions = {
+      from: `"no-reply" ${process.env.SMTP_USER_NAME}`, // sender address
+      to: course.teacher.email, // list of receivers
+      subject: "Course Attendance", // Subject line
+      text: `Complete Attendance for ${courseName}`, // plain text body
+      html: `<b>Complete Attendance for ${courseName}</b>`, // html body
+      attachments: [
+        {
+          // filename and content type is derived from path
+          path: "./attendance.xlsx",
+        },
+      ],
+    };
+    await sendEmail(mailOptions);
     res
       .status(200)
       .json({ error: false, message: "Attendance sent successfully" });
