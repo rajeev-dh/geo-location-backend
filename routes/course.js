@@ -6,6 +6,7 @@ import {
   enrollCourse,
   getCourseById,
   getCourses,
+  inviteStudentsToEnrollCourse,
   sendAttendanceViaEmail,
 } from "../controllers/course.js";
 
@@ -17,5 +18,6 @@ router.post("/enrollCourse", enrollCourse);
 router.get("/getCourseById", getCourseById);
 router.get("/sendAttendanceViaMail", sendAttendanceViaEmail);
 router.delete("/deleteCourseById", deleteCourseById);
+router.post("/inviteStudentsToEnrollCourse", inviteStudentsToEnrollCourse);
 
 export default router;
