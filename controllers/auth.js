@@ -12,18 +12,14 @@ import sendEmail from "../utils/sendEmail.js";
 
 const login = async (req, res) => {
   try {
-    const { email } = req.body;
-    req.body = {
-      ...req.body,
-      email: email.replace(/\s/g, "").toLowerCase(),
-    };
-    const { error } = logInBodyValidation(req.body);
+    const email = req.body.email.replace(/\s/g, "").toLowerCase();
+    const { error } = logInBodyValidation({ ...req.body, email });
     if (error)
       return res
         .status(400)
         .json({ error: true, message: error.details[0].message });
 
-    const user = await User.findOne({ email: req.body.email });
+    const user = await User.findOne({ email });
     if (!user)
       return res
         .status(401)
@@ -62,18 +58,15 @@ const login = async (req, res) => {
 
 const signUp = async (req, res) => {
   try {
-    const { email } = req.body;
-    req.body = {
-      ...req.body,
-      email: email.replace(/\s/g, "").toLowerCase(),
-    };
-    const { error } = signUpBodyValidation();
+    const email = req.body.email.replace(/\s/g, "").toLowerCase();
+    req.body = { ...req.body, email };
+    const { error } = signUpBodyValidation(req.body);
     if (error)
       return res
         .status(400)
         .json({ error: true, message: error.details[0].message });
 
-    const oldUser = await User.findOne({ email: req.body.email });
+    const oldUser = await User.findOne({ email });
     if (oldUser)
       return res
         .status(409)
