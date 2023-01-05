@@ -28,6 +28,11 @@ const login = async (req, res) => {
       return res
         .status(401)
         .json({ error: true, message: "No User found with given email" });
+    if (!user.password)
+      return res.status(400).json({
+        error: true,
+        message: `You signed up with Google. Please login using Google or continue using forgot Password`,
+      });
 
     const verifiedPassword = await bcrypt.compare(
       req.body.password,
@@ -88,6 +93,53 @@ const signUp = async (req, res) => {
         role: user.role,
       },
       message: "Account created sucessfully",
+    });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ error: true, message: "Internal Server Error" });
+  }
+};
+
+const authWithGoogle = async (req, res) => {
+  try {
+    const { firstName, lastName, email, gId, profileImage } = req.body;
+
+    if (!gId || !firstName || !email)
+      return res
+        .status(400)
+        .json({ error: true, message: "Somthing is missing" });
+    if (!/[a-zA-Z0-9+_.-]+@gkv.ac.in/.test(email))
+      return res
+        .status(400)
+        .json({ error: true, message: "Please use GKV mail" });
+    const role = /^\d[1-9]([0-9]{1,9}@gkv.ac.in$)/.test(email)
+      ? "student"
+      : "teacher";
+    const registrationNo = role === "student" ? email.substr(0, 9) : null;
+    const name = lastName ? `${firstName} ${lastName}` : firstName;
+    let user = await User.findOne({ email });
+
+    if (!user) {
+      user = await new User({
+        name,
+        email,
+        gId,
+        profileImage,
+        role,
+        registrationNo,
+      }).save();
+    } else if (!user.gId) {
+      await User.updateOne({ email }, { gId, profileImage });
+    }
+    const token = await generateToken(user);
+    res.status(200).json({
+      error: false,
+      token,
+      user: {
+        name: user.name,
+        role: user.role,
+      },
+      message: "User Authenticated sucessfully",
     });
   } catch (err) {
     console.log(err);
@@ -185,7 +237,7 @@ const resetPassword = async (req, res) => {
   }
 };
 
-export { login, signUp, recover, reset, resetPassword };
+export { login, signUp, authWithGoogle, recover, reset, resetPassword };
 
 const generateToken = async (user) => {
   try {

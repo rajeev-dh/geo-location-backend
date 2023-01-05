@@ -31,6 +31,10 @@ const courseSchema = new Schema({
     type: Boolean,
     default: false,
   },
+  isActive: {
+    type: Boolean,
+    default: true,
+  },
 });
 
 const Course = mongoose.model("Course", courseSchema);

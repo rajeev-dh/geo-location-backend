@@ -48,6 +48,10 @@ const enrollCourse = async (req, res) => {
     const course = await Course.findOne({ courseCode });
     if (!course)
       return res.status(404).json({ error: true, message: "Course not found" });
+    if (!course.isActive)
+      return res
+        .status(400)
+        .json({ error: true, message: "Course closed for enrollment" });
     const studentCourse = await Course.findOne({
       courseCode,
       students: studentId,
@@ -65,6 +69,28 @@ const enrollCourse = async (req, res) => {
       error: false,
       data: enrolledCourse,
       message: "Course Enrollment Done",
+    });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ error: true, message: "Internal Server Error" });
+  }
+};
+
+const closeEnrollment = async (req, res) => {
+  try {
+    const { courseId } = req.body;
+    if (!mongoose.Types.ObjectId.isValid(courseId))
+      return res
+        .status(400)
+        .json({ error: true, message: "Course Id is not valid" });
+    const course = await Course.findByIdAndUpdate(courseId, {
+      isActive: false,
+    });
+    if (!course)
+      return res.status(404).json({ error: true, message: "Course not found" });
+    res.status(200).json({
+      error: false,
+      message: "Course Enrollment closed successfully",
     });
   } catch (err) {
     console.log(err);
@@ -203,6 +229,7 @@ export {
   createCourse,
   getCourses,
   enrollCourse,
+  closeEnrollment,
   getCourseById,
   deleteCourseById,
   sendAttendanceViaEmail,

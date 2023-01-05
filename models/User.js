@@ -16,15 +16,16 @@ const userSchema = new Schema(
       required: "Your email is required",
       trim: true,
     },
+    gId: {
+      type: String,
+      unique: true,
+    },
     password: {
       type: String,
-      required: true,
-      required: "Your password is required",
       max: 100,
     },
     profileImage: {
       type: String,
-      required: false,
       max: 255,
     },
     registrationNo: {
@@ -37,11 +38,9 @@ const userSchema = new Schema(
     },
     resetPasswordToken: {
       type: String,
-      required: false,
     },
     resetPasswordExpires: {
       type: Date,
-      required: false,
     },
   },
   { timestamps: true }
