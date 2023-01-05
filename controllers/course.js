@@ -76,21 +76,22 @@ const enrollCourse = async (req, res) => {
   }
 };
 
-const closeEnrollment = async (req, res) => {
+const toggleCourseEnrollment = async (req, res) => {
   try {
     const { courseId } = req.body;
     if (!mongoose.Types.ObjectId.isValid(courseId))
       return res
         .status(400)
         .json({ error: true, message: "Course Id is not valid" });
-    const course = await Course.findByIdAndUpdate(courseId, {
-      isActive: false,
-    });
+    const course = await Course.findById(courseId);
     if (!course)
       return res.status(404).json({ error: true, message: "Course not found" });
+    await Course.updateOne({ _id: courseId }, { isActive: !course.isActive });
     res.status(200).json({
       error: false,
-      message: "Course Enrollment closed successfully",
+      message: `Course Enrollment ${
+        !course.isActive ? "Started" : "Closed"
+      } successfully`,
     });
   } catch (err) {
     console.log(err);
@@ -147,11 +148,15 @@ const sendAttendanceViaEmail = async (req, res) => {
   const filePath = "./attendance.xlsx";
   try {
     const { courseId } = req.query;
-    console.log("courseId: ", courseId);
     if (!mongoose.Types.ObjectId.isValid(courseId))
       return res
         .status(400)
         .json({ error: true, message: "Course Id is not valid" });
+    const course = await Course.findById(courseId)
+      .populate("students", "name registrationNo")
+      .populate("teacher", "email");
+    if (!course)
+      return res.status(404).json({ error: true, message: "Course not found" });
     const classes = await Class.find({ courseId });
     const classesDates = classes.map((cls) =>
       cls.createdDate.toLocaleDateString("pt-PT")
@@ -161,9 +166,6 @@ const sendAttendanceViaEmail = async (req, res) => {
       "Student Name",
       ...classesDates,
     ];
-    const course = await Course.findById(courseId)
-      .populate("students", "name registrationNo")
-      .populate("teacher", "email");
     const users = course.students;
     let userList = [];
     for (let i = 0; i < users.length; i++) {
@@ -229,7 +231,7 @@ export {
   createCourse,
   getCourses,
   enrollCourse,
-  closeEnrollment,
+  toggleCourseEnrollment,
   getCourseById,
   deleteCourseById,
   sendAttendanceViaEmail,
