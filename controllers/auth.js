@@ -29,7 +29,10 @@ const login = async (req, res) => {
         .status(401)
         .json({ error: true, message: "No User found with given email" });
 
-    const verifiedPassword = bcrypt.compare(req.body.password, user.password);
+    const verifiedPassword = await bcrypt.compare(
+      req.body.password,
+      user.password
+    );
     if (!verifiedPassword)
       return res
         .status(401)
@@ -153,13 +156,15 @@ const reset = async (req, res) => {
 // @access Public
 const resetPassword = async (req, res) => {
   try {
+    const salt = await bcrypt.genSalt(Number(process.env.SALT));
+    const hashPassword = await bcrypt.hash(req.body.password, salt);
     const user = await User.findOneAndUpdate(
       {
         resetPasswordToken: req.params.token,
         resetPasswordExpires: { $gt: Date.now() },
       },
       {
-        password: req.body.password,
+        password: hashPassword,
         resetPasswordToken: null,
         resetPasswordExpires: null,
       }
