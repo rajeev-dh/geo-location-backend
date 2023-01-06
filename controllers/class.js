@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-import { getPreciseDistance } from "geolib";
 
 import Class from "../models/Class.js";
 import Course from "../models/Course.js";
