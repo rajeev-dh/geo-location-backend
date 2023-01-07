@@ -1,5 +1,6 @@
 import express from "express";
 import { config } from "dotenv";
+import cors from "cors";
 
 import dbConnect from "./config/dbConnect.js";
 import authRoutes from "./routes/auth.js";
@@ -12,6 +13,7 @@ const app = express();
 config();
 dbConnect();
 
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

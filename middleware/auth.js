@@ -3,8 +3,8 @@ import jwt from "jsonwebtoken";
 const auth = async (req, res, next) => {
   const token =
     req.headers["x-access-token"] ||
-    (req.headers["authorization"]
-      ? req.headers["authorization"].split(" ")[1]
+    (req.headers.authorization && req.headers.authorization.startsWith("Bearer")
+      ? req.headers.authorization.split(" ")[1]
       : null);
   if (!token)
     return res

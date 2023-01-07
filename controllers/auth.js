@@ -12,12 +12,12 @@ import sendEmail from "../utils/sendEmail.js";
 
 const login = async (req, res) => {
   try {
-    const email = req.body.email.replace(/\s/g, "").toLowerCase();
-    const { error } = logInBodyValidation({ ...req.body, email });
+    const { error } = logInBodyValidation(req.body);
     if (error)
       return res
         .status(400)
         .json({ error: true, message: error.details[0].message });
+    const email = req.body.email.replace(/\s/g, "").toLowerCase();
 
     const user = await User.findOne({ email });
     if (!user)
@@ -58,13 +58,13 @@ const login = async (req, res) => {
 
 const signUp = async (req, res) => {
   try {
-    const email = req.body.email.replace(/\s/g, "").toLowerCase();
-    req.body = { ...req.body, email };
     const { error } = signUpBodyValidation(req.body);
     if (error)
       return res
         .status(400)
         .json({ error: true, message: error.details[0].message });
+    const email = req.body.email.replace(/\s/g, "").toLowerCase();
+    req.body = { ...req.body, email };
 
     const oldUser = await User.findOne({ email });
     if (oldUser)
@@ -144,9 +144,9 @@ const authWithGoogle = async (req, res) => {
 // @desc Recover Password - Generates token and Sends password reset email
 // @access Public
 const recover = async (req, res) => {
-  const { email } = req.body;
   if (!email)
     return res.status(400).json({ error: true, message: "Email is missing" });
+  const email = req.body.email.replace(/\s/g, "").toLowerCase();
   try {
     const user = await User.findOneAndUpdate(
       { email },
