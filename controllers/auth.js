@@ -148,6 +148,52 @@ const authWithGoogle = async (req, res) => {
   }
 };
 
+const authWithGoogleForApp = async (req, res) => {
+  try {
+    const { name, email, gId, profileImage } = req.body;
+
+    if (!gId || !name || !email)
+      return res
+        .status(400)
+        .json({ error: true, message: "Somthing is missing" });
+    if (!/[a-zA-Z0-9+_.-]+@gkv.ac.in/.test(email))
+      return res
+        .status(400)
+        .json({ error: true, message: "Please use GKV mail" });
+    const role = /^\d[1-9]([0-9]{1,9}@gkv.ac.in$)/.test(email)
+      ? "student"
+      : "teacher";
+    const registrationNo = role === "student" ? email.substr(0, 9) : null;
+    let user = await User.findOne({ email });
+
+    if (!user) {
+      user = await new User({
+        name,
+        email,
+        gId,
+        profileImage,
+        role,
+        registrationNo,
+      }).save();
+    } else if (!user.gId) {
+      await User.updateOne({ email }, { gId, profileImage });
+    }
+    const token = await generateToken(user);
+    res.status(200).json({
+      error: false,
+      token,
+      user: {
+        name: user.name,
+        role: user.role,
+      },
+      message: "User Authenticated sucessfully",
+    });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ error: true, message: "Internal Server Error" });
+  }
+};
+
 // @route POST api/auth/recover
 // @desc Recover Password - Generates token and Sends password reset email
 // @access Public
@@ -238,7 +284,15 @@ const resetPassword = async (req, res) => {
   }
 };
 
-export { login, signUp, authWithGoogle, recover, reset, resetPassword };
+export {
+  login,
+  signUp,
+  authWithGoogle,
+  authWithGoogleForApp,
+  recover,
+  reset,
+  resetPassword,
+};
 
 const generateToken = async (user) => {
   try {
