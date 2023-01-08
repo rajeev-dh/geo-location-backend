@@ -127,7 +127,7 @@ const getClassesByCourseId = async (req, res) => {
       req.user.role === "student"
         ? { students: req.user._id, courseId }
         : { courseId };
-    const classes = await Class.find(query);
+    const classes = await Class.find(query).sort({ createdDate: -1 });
     res.status(200).json({
       error: false,
       data: classes,

@@ -1,8 +1,9 @@
 import mongoose from "mongoose";
+import formidable from "formidable";
 
 import Class from "../models/Class.js";
 import Course from "../models/Course.js";
-import { exportToExcel } from "../utils/genrateExcel.js";
+import { exportToExcel, readExcel } from "../utils/genrateExcel.js";
 import sendEmail from "../utils/sendEmail.js";
 
 const createCourse = async (req, res) => {
@@ -78,7 +79,7 @@ const enrollCourse = async (req, res) => {
 
 const toggleCourseEnrollment = async (req, res) => {
   try {
-    const { courseId } = req.body;
+    const { courseId, toggle } = req.body;
     if (!mongoose.Types.ObjectId.isValid(courseId))
       return res
         .status(400)
@@ -86,11 +87,11 @@ const toggleCourseEnrollment = async (req, res) => {
     const course = await Course.findById(courseId);
     if (!course)
       return res.status(404).json({ error: true, message: "Course not found" });
-    await Course.updateOne({ _id: courseId }, { isActive: !course.isActive });
+    await Course.updateOne({ _id: courseId }, { isActive: toggle });
     res.status(200).json({
       error: false,
       message: `Course Enrollment ${
-        !course.isActive ? "Started" : "Closed"
+        toggle ? "Started" : "Closed"
       } successfully`,
     });
   } catch (err) {
@@ -205,22 +206,34 @@ const sendAttendanceViaEmail = async (req, res) => {
 
 const inviteStudentsToEnrollCourse = async (req, res) => {
   try {
-    const { courseId, emails } = req.body;
-    if (!mongoose.Types.ObjectId.isValid(courseId))
-      return res
-        .status(400)
-        .json({ error: true, message: "Course Id is not valid" });
-    const course = await Course.findById(courseId).populate("teacher", "name");
-    if (!course)
-      return res.status(404).json({ error: true, message: "Course not found" });
-    const mailOptions = {
-      from: `"no-reply" ${process.env.SMTP_USER_NAME}`, // sender address
-      to: emails, // list of receivers
-      subject: `Course Invitation for ${course.courseName}`, // Subject line
-      html: `<p><b>${course.teacher.name}</b> sir invites you join the course with code <b>${course.courseCode}</b></p>`,
-    };
-    sendEmail(mailOptions);
-    res.status(200).json({ error: false, message: "Email sent to everyone" });
+    const form = formidable({ multiples: true });
+    form.parse(req, async (err, fields, files) => {
+      if (!files.emails)
+        return res.status(400).json({ error: true, message: "File not found" });
+      const courseId = fields.courseId;
+      if (!mongoose.Types.ObjectId.isValid(courseId))
+        return res
+          .status(400)
+          .json({ error: true, message: "Course Id is not valid" });
+      const f = Object.entries(files)[0][1];
+      const emails = readExcel(f.filepath);
+      const course = await Course.findById(courseId).populate(
+        "teacher",
+        "name"
+      );
+      if (!course)
+        return res
+          .status(404)
+          .json({ error: true, message: "Course not found" });
+      const mailOptions = {
+        from: `"no-reply" ${process.env.SMTP_USER_NAME}`, // sender address
+        to: emails, // list of receivers
+        subject: `Course Invitation for ${course.courseName}`, // Subject line
+        html: `<p><b>${course.teacher.name}</b> sir invites you join the course with code <b>${course.courseCode}</b></p>`,
+      };
+      sendEmail(mailOptions);
+      res.status(200).json({ error: false, message: "Email sent to everyone" });
+    });
   } catch (err) {
     console.log(err);
     res.status(500).json({ error: true, message: "Internal Server Error" });

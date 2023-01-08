@@ -152,7 +152,7 @@ const authWithGoogle = async (req, res) => {
 // @desc Recover Password - Generates token and Sends password reset email
 // @access Public
 const recover = async (req, res) => {
-  if (!email)
+  if (!req.body.email)
     return res.status(400).json({ error: true, message: "Email is missing" });
   const email = req.body.email.replace(/\s/g, "").toLowerCase();
   try {
