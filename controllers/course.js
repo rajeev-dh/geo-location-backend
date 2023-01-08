@@ -159,6 +159,9 @@ const sendAttendanceViaEmail = async (req, res) => {
     if (!course)
       return res.status(404).json({ error: true, message: "Course not found" });
     const classes = await Class.find({ courseId });
+    if (!classes.length)
+      return res.status(404).json({ error: true, message: "No Classes found" });
+    const courseName = course.courseName;
     const classesDates = classes.map((cls) =>
       cls.createdDate.toLocaleDateString("pt-PT")
     );
