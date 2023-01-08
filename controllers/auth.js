@@ -2,6 +2,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import path from "path";
 import crypto from "crypto";
+import { OAuth2Client } from "google-auth-library";
 
 import User from "../models/User.js";
 import {
@@ -95,45 +96,52 @@ const signUp = async (req, res) => {
 
 const authWithGoogle = async (req, res) => {
   try {
-    const { firstName, lastName, email, gId, profileImage } = req.body;
+    if (req.body.credential) {
+      const verificationResponse = await verifyGoogleToken(req.body.credential);
+      if (verificationResponse.error) {
+        return res.status(400).json({
+          error: true,
+          message: verificationResponse.error,
+        });
+      }
+      const profile = verificationResponse?.payload;
+      const email = profile.email;
+      if (!/[a-zA-Z0-9+_.-]+@gkv.ac.in/.test(email))
+        return res
+          .status(400)
+          .json({ error: true, message: "Please use GKV mail" });
+      const role = /^\d[1-9]([0-9]{1,9}@gkv.ac.in$)/.test(email)
+        ? "student"
+        : "teacher";
+      const registrationNo = role === "student" ? email.substring(0, 9) : null;
+      const name = profile.name;
+      const gId = profile.sub;
+      const profileImage = profile.picture;
+      let user = await User.findOne({ email });
 
-    if (!gId || !firstName || !email)
-      return res
-        .status(400)
-        .json({ error: true, message: "Somthing is missing" });
-    if (!/[a-zA-Z0-9+_.-]+@gkv.ac.in/.test(email))
-      return res
-        .status(400)
-        .json({ error: true, message: "Please use GKV mail" });
-    const role = /^\d[1-9]([0-9]{1,9}@gkv.ac.in$)/.test(email)
-      ? "student"
-      : "teacher";
-    const registrationNo = role === "student" ? email.substr(0, 9) : null;
-    const name = lastName ? `${firstName} ${lastName}` : firstName;
-    let user = await User.findOne({ email });
-
-    if (!user) {
-      user = await new User({
-        name,
-        email,
-        gId,
-        profileImage,
-        role,
-        registrationNo,
-      }).save();
-    } else if (!user.gId) {
-      await User.updateOne({ email }, { gId, profileImage });
+      if (!user) {
+        user = await new User({
+          name,
+          email,
+          gId,
+          profileImage,
+          role,
+          registrationNo,
+        }).save();
+      } else if (!user.gId) {
+        await User.updateOne({ email }, { gId, profileImage });
+      }
+      const token = await generateToken(user);
+      res.status(200).json({
+        error: false,
+        token,
+        user: {
+          name: user.name,
+          role: user.role,
+        },
+        message: "User Authenticated sucessfully",
+      });
     }
-    const token = await generateToken(user);
-    res.status(200).json({
-      error: false,
-      token,
-      user: {
-        name: user.name,
-        role: user.role,
-      },
-      message: "User Authenticated sucessfully",
-    });
   } catch (err) {
     console.log(err);
     res.status(500).json({ error: true, message: "Internal Server Error" });
@@ -242,5 +250,19 @@ const generateToken = async (user) => {
     return Promise.resolve(token);
   } catch (err) {
     return Promise.reject(err);
+  }
+};
+
+const verifyGoogleToken = async (token) => {
+  try {
+    const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
+    const client = new OAuth2Client(GOOGLE_CLIENT_ID);
+    const ticket = await client.verifyIdToken({
+      idToken: token,
+      audience: GOOGLE_CLIENT_ID,
+    });
+    return { payload: ticket.getPayload() };
+  } catch (error) {
+    return { error: "Invalid user detected. Please try again" };
   }
 };
