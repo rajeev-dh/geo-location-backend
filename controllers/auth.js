@@ -45,10 +45,7 @@ const login = async (req, res) => {
     res.status(200).json({
       error: false,
       token,
-      user: {
-        name: user.name,
-        role: user.role,
-      },
+      user,
       message: "Logged in sucessfully",
     });
   } catch (err) {
@@ -82,10 +79,7 @@ const signUp = async (req, res) => {
     res.status(201).json({
       error: false,
       token,
-      user: {
-        name: user.name,
-        role: user.role,
-      },
+      user,
       message: "Account created sucessfully",
     });
   } catch (err) {
@@ -135,10 +129,7 @@ const authWithGoogle = async (req, res) => {
       res.status(200).json({
         error: false,
         token,
-        user: {
-          name: user.name,
-          role: user.role,
-        },
+        user,
         message: "User Authenticated sucessfully",
       });
     }
@@ -182,10 +173,7 @@ const authWithGoogleForApp = async (req, res) => {
     res.status(200).json({
       error: false,
       token,
-      user: {
-        name: user.name,
-        role: user.role,
-      },
+      user,
       message: "User Authenticated sucessfully",
     });
   } catch (err) {
